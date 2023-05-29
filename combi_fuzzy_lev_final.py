@@ -73,3 +73,8 @@ while i < len(text_parts) - 1:
 # Print the final list
 for line in lines:
     print(line, end='')
+
+# Save the final output to a file
+with open("/content/n_bbox/final_output.txt", "w") as file:
+    for line in lines:
+        file.write(line)
