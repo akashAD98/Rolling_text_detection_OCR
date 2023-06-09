@@ -8,9 +8,10 @@ import numpy as np
 import os
 
 # Define the path to the folder containing the image files
-input_folder_path = '/content/drive/MyDrive/zz_newocr/inputimg'
-output_folder_path = '/content/drive/MyDrive/zz_newocr/output_txtNew'
-bbox_folder_path = '/content/drive/MyDrive/zz_newocr/output_bboxNew'
+input_folder_path = '/content/drive/MyDrive/zz_newocr/images_ori_regin/extracted_video_regin - Copy'
+#'/content/drive/MyDrive/zz_newocr/images_ori_regin/extracted_video_regin - Copy'
+output_folder_path = '/content/drive/MyDrive/zz_newocr/images_ori_regin/text_regin'
+bbox_folder_path = '/content/drive/MyDrive/zz_newocr/images_ori_regin/bbox_regin'
 
 # Create output folders if they do not exist
 os.makedirs(output_folder_path, exist_ok=True)
@@ -28,14 +29,34 @@ def get_bbox_parameters(bbox):
     
     return {"left": xmin, "top": ymin, "width": xmax - xmin, "height": ymax - ymin}
 
-def lineup(boxes):
+# def lineup(boxes):
+#     """Combine boxes that are on the same line"""
+#     linebox = None
+#     for box in sorted(boxes, key=lambda x: get_bbox_parameters(x[0])['top']):
+#         bbox_params = get_bbox_parameters(box[0])
+#         if linebox is None:
+#             linebox = {"left": bbox_params['left'], "top": bbox_params['top'], "width": bbox_params['width'], "height": bbox_params['height'], "text": box[1]}  # first line begins
+#         elif bbox_params['top'] <= linebox['top'] + linebox['height']:  # box in same line
+#             linebox['top'] = min(linebox['top'], bbox_params['top'])
+#             linebox['left'] = min(linebox['left'], bbox_params['left']) 
+#             linebox['width'] = max(linebox['left'] + linebox['width'], bbox_params['left'] + bbox_params['width']) - linebox['left'] 
+#             linebox['height'] = max(linebox['top'] + linebox['height'], bbox_params['top'] + bbox_params['height']) - linebox['top'] 
+#             linebox['text'] += ' ' + box[1]
+#         else:  # Start a new line
+#             yield linebox  # Return the completed linebox
+#             linebox = {"left": bbox_params['left'], "top": bbox_params['top'], "width": bbox_params['width'], "height": bbox_params['height'], "text": box[1]}  # Start a new line with the current box
+#     if linebox is not None:  # If there is a linebox left
+#         yield linebox  # Return it
+
+
+def lineup(boxes, v_overlap_factor=0.5):
     """Combine boxes that are on the same line"""
     linebox = None
     for box in sorted(boxes, key=lambda x: get_bbox_parameters(x[0])['top']):
         bbox_params = get_bbox_parameters(box[0])
         if linebox is None:
             linebox = {"left": bbox_params['left'], "top": bbox_params['top'], "width": bbox_params['width'], "height": bbox_params['height'], "text": box[1]}  # first line begins
-        elif bbox_params['top'] <= linebox['top'] + linebox['height']:  # box in same line
+        elif bbox_params['top'] + v_overlap_factor*bbox_params['height'] <= linebox['top'] + linebox['height']:  # box in same line
             linebox['top'] = min(linebox['top'], bbox_params['top'])
             linebox['left'] = min(linebox['left'], bbox_params['left']) 
             linebox['width'] = max(linebox['left'] + linebox['width'], bbox_params['left'] + bbox_params['width']) - linebox['left'] 
@@ -63,7 +84,7 @@ for filename in os.listdir(input_folder_path):
     # Read the text from the image
     results = reader.readtext(image_path, width_ths=3, detail=1)
 
-    # Filter out results with less than 60% confidence
+    # Filter out results with less than 55% confidence
     results = [result for result in results if result[2] >= 0.55]
 
     lines = list(lineup(results))
