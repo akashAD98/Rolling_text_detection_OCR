@@ -85,15 +85,6 @@ def process_files(dir_path, log_file_path):
         final_output_lines = output.splitlines()
         last_final_output_lines = []
 
-        # for line in final_output_lines:
-        #     parts = line.split(' | ')
-        #     # parts[0] is the part before ' | ', which is text and bbox information
-        #     text_bbox_parts = parts[0].split(',')
-        #     text_part = text_bbox_parts[0]  # First part before ',' is text
-        #     file_part = parts[1].replace('from file: ', '')  # Remove 'from file: ' from file part
-        #     last_final_output_line = f"{text_part} | from file: {file_part}"
-        #     last_final_output_lines.append(last_final_output_line)
-
 
         for line in final_output_lines:
             parts = line.split(' | ')
@@ -104,14 +95,15 @@ def process_files(dir_path, log_file_path):
                 file_part = parts[1].replace('from file: ', '')  # Remove 'from file: ' from file part
             else:
                 file_part = ''  # Default value if 'from file: ' part is missing
-            last_final_output_line = f"{text_part} | from file: {file_part}"
+            #last_final_output_line = f"{text_part} | from file: {file_part}"
+            last_final_output_line = f"{text_part}"
             last_final_output_lines.append(last_final_output_line)
 
         with open(os.path.join(dir_path, 'output_last_final.txt'), 'w') as file:
             file.write('\n'.join(last_final_output_lines))
 
 # Prompt the user to enter the folder path
-folder_path = '/content/drive/MyDrive/zz_newocr/output_txtNew'
+folder_path = '/content/op'
 log_file_path = folder_path +'/ocrlog.log'
 
 # Call the function to process the files
