@@ -1,4 +1,4 @@
-## all code
+# one more line added
 
 
 import os
@@ -32,16 +32,34 @@ def find_start_index(in_lines, output_lines, output_lines_set):
 
     return start_idx if start_idx is not None else 0
 
-def write_output_lines(in_lines, start_idx, output_lines_set, out_file, txt_file):
+# def write_output_lines(in_lines, start_idx, output_lines_set, out_file, txt_file, no_bbox_file):
+#     new_output_lines = []
+#     for line in in_lines[start_idx:]:
+#         line_text = line.strip().split(',')[0]
+#         if line_text not in output_lines_set:
+#             out_line = line.strip() + ' | from file: ' + txt_file
+#             no_bbox_line = line_text + ' | from file: ' + txt_file
+#             out_file.write(out_line + '\n')
+#             no_bbox_file.write(no_bbox_line + '\n')
+#             new_output_lines.append(out_line)
+#             output_lines_set.add(line_text)
+#     return new_output_lines, output_lines_set
+
+def write_output_lines(in_lines, start_idx, output_lines_set, out_file, txt_file, no_bbox_file, only_text_file):
     new_output_lines = []
     for line in in_lines[start_idx:]:
         line_text = line.strip().split(',')[0]
         if line_text not in output_lines_set:
             out_line = line.strip() + ' | from file: ' + txt_file
+            no_bbox_line = line_text + ' | from file: ' + txt_file
+            only_text_line = line_text
             out_file.write(out_line + '\n')
+            no_bbox_file.write(no_bbox_line + '\n')
+            only_text_file.write(only_text_line + '\n')
             new_output_lines.append(out_line)
             output_lines_set.add(line_text)
     return new_output_lines, output_lines_set
+
 
 def remove_similar_lines(text_parts, full_lines, log_file):
     i = 0
@@ -65,11 +83,41 @@ def write_final_outputs(output, output_folder):
             text_part = line.split(' | ')[0].split(',')[0]
             text_file.write(text_part + '\n')
 
+# def process_files(dir_path, log_file_path, output_folder, frame_interval):
+#     txt_files = sorted([f for f in os.listdir(dir_path) if f.endswith('.txt')], key=lambda x: int(x.split('_')[-1].split('.')[0]))
+
+#     output_file_path = os.path.join(output_folder, 'output.txt')
+#     output_file_path_with_interval = os.path.join(output_folder, 'output_withframe_interval.txt')
+#     output_file_path_no_bbox = os.path.join(output_folder, 'output_withframinterval_withoutbbox_information.txt')
+
+#     output_lines = []
+#     output_lines_set = set()
+
+#     for i in range(0, len(txt_files), frame_interval):
+#         txt_file_group = txt_files[i: i + frame_interval]
+
+#         with open(output_file_path_with_interval, 'a') as out_file, open(output_file_path_no_bbox, 'a') as no_bbox_file:
+#             out_file.write(f'from {txt_file_group[0]} to {txt_file_group[-1]}:\n')
+#             no_bbox_file.write(f'from {txt_file_group[0]} to {txt_file_group[-1]}:\n')
+#             for txt_file in txt_file_group:
+#                 with open(os.path.join(dir_path, txt_file), 'r') as in_file:
+#                     in_lines = in_file.readlines()
+
+#                     start_idx = find_start_index(in_lines, output_lines, output_lines_set)
+#                     new_output_lines, new_output_lines_set = write_output_lines(in_lines, start_idx, output_lines_set, out_file, txt_file, no_bbox_file)
+#                     output_lines += new_output_lines
+#                     output_lines_set = output_lines_set.union(new_output_lines_set)
+#             out_file.write('\n')
+#             no_bbox_file.write('\n')
+
+
 def process_files(dir_path, log_file_path, output_folder, frame_interval):
     txt_files = sorted([f for f in os.listdir(dir_path) if f.endswith('.txt')], key=lambda x: int(x.split('_')[-1].split('.')[0]))
 
     output_file_path = os.path.join(output_folder, 'output.txt')
     output_file_path_with_interval = os.path.join(output_folder, 'output_withframe_interval.txt')
+    output_file_path_no_bbox = os.path.join(output_folder, 'output_withframinterval_withoutbbox_information.txt')
+    output_file_path_only_text = os.path.join(output_folder, 'output_onlytext_interval.txt')  # new output file
 
     output_lines = []
     output_lines_set = set()
@@ -77,17 +125,22 @@ def process_files(dir_path, log_file_path, output_folder, frame_interval):
     for i in range(0, len(txt_files), frame_interval):
         txt_file_group = txt_files[i: i + frame_interval]
 
-        with open(output_file_path_with_interval, 'a') as out_file:
+        with open(output_file_path_with_interval, 'a') as out_file, open(output_file_path_no_bbox, 'a') as no_bbox_file, open(output_file_path_only_text, 'a') as only_text_file:  # open new file here
             out_file.write(f'from {txt_file_group[0]} to {txt_file_group[-1]}:\n')
+            no_bbox_file.write(f'from {txt_file_group[0]} to {txt_file_group[-1]}:\n')
+            only_text_file.write(f'from {txt_file_group[0]} to {txt_file_group[-1]}:\n')  # write to new file here
             for txt_file in txt_file_group:
                 with open(os.path.join(dir_path, txt_file), 'r') as in_file:
                     in_lines = in_file.readlines()
 
                     start_idx = find_start_index(in_lines, output_lines, output_lines_set)
-                    new_output_lines, new_output_lines_set = write_output_lines(in_lines, start_idx, output_lines_set, out_file, txt_file)
+                    new_output_lines, new_output_lines_set = write_output_lines(in_lines, start_idx, output_lines_set, out_file, txt_file, no_bbox_file, only_text_file)  # pass new file here
                     output_lines += new_output_lines
                     output_lines_set = output_lines_set.union(new_output_lines_set)
             out_file.write('\n')
+            no_bbox_file.write('\n')
+            only_text_file.write('\n')  # write to new file here
+
 
     with open(output_file_path, 'w') as out_file:
         out_file.write('\n'.join(output_lines))
@@ -107,7 +160,7 @@ def process_files(dir_path, log_file_path, output_folder, frame_interval):
         write_final_outputs(output, output_folder)
 
 def main():
-    folder_path = '/content/INP'
+    folder_path = '/content/inp_many'
     output_folder = os.path.join(folder_path, 'output')
     log_file_path = os.path.join(output_folder, 'ocr_alllog.log')
 
